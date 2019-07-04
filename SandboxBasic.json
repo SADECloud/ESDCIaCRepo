@@ -71,7 +71,7 @@
                 "allowGatewayTransit": false,
                 "useRemoteGateways": false,
                 "remoteVirtualNetwork": {
-                    "id": "/subscriptions/8da8d7d6-b984-49ab-a3cc-22d5b6c8994b/resourceGroups/NetworkHub/providers/Microsoft.Network/virtualNetworks/HubNetwork"
+                    "id": "/subscriptions/baa193d5-e3f6-4ffd-8c62-64b373493977/resourceGroups/NetworkHub/providers/Microsoft.Network/virtualNetworks/HubNetwork"
                 }
             }
         },
