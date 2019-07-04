@@ -1,0 +1,90 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "SandboxName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the Sandbox"
+            }
+        },
+        "AddressSpace": {
+            "type": "string",
+            "metadata": {
+                "description": "Address space of this VNet"
+            }
+        },
+        "Owner": {
+            "type": "string",
+            "metadata": {
+                "description": "Principal of the RG Owner"
+            }
+        },
+        "UniqueRoleAssignmentID": {
+            "type": "string",
+            "defaultValue": "[newGuid()]",
+            "metadata": {
+                "description": "Principal of the RG Owner"
+            }
+        }
+    },
+    "variables": {
+        "VNetName": "[concat(parameters('SandboxName'), 'VNet')]",
+        "DemoNetworkSubnet1Name": "Subnet-1",
+        "Owner": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]"
+    },
+    "resources": [
+        {
+            "name": "[variables('VNetName')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2016-03-30",
+            "dependsOn": [],
+            "tags": {
+                "resourceOwner": "[parameters('Owner')]"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('AddressSpace')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('DemoNetworkSubnet1Name')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('AddressSpace')]"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2016-06-01",
+            "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+            "name": "[concat(variables('VNetName'), '/spokeToHub')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": ["[variables('VNetName')]"],
+            "properties": {
+                "allowVirtualNetworkAccess": true,
+                "allowForwardedTraffic": false,
+                "allowGatewayTransit": false,
+                "useRemoteGateways": false,
+                "remoteVirtualNetwork": {
+                    "id": "/subscriptions/8da8d7d6-b984-49ab-a3cc-22d5b6c8994b/resourceGroups/NetworkHub/providers/Microsoft.Network/virtualNetworks/HubNetwork"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2017-05-01",
+            "name": "[parameters('UniqueRoleAssignmentID')]",
+            "properties": {
+                "roleDefinitionId": "[variables('Owner')]",
+                "principalId": "[parameters('Owner')]",
+                "scope": "[resourceGroup().id]"
+            }
+        }
+    ],
+    "outputs": {}
+}
